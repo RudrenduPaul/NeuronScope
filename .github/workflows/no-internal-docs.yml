@@ -1,0 +1,34 @@
+name: No Internal Docs Guard
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Block internal-only filenames
+        run: |
+          set -e
+          MATCHES=$(git ls-files | grep -E '^(CLAUDE\.md|TODOS\.md|BRANCH_PROTECTION\.md)$|^docs/(branch-protection|security-review-.*)\.md$|^docs/launch/|.*preprint.*' || true)
+          if [ -n "$MATCHES" ]; then
+            echo "Internal-only files must not be committed to this public repo:"
+            echo "$MATCHES"
+            exit 1
+          fi
+
+      - name: Block internal-process language in tracked files
+        run: |
+          set -e
+          PATTERN='CEO review|office.?hours|eng.?review|devex review|CSO review|CSO threat.?model|/oss-[0-9]+-[a-z-]+|/plan-eng-review|Reviewer Concern|viability score|fundrais|investor.?outreach|Show HN draft|hype.?seed'
+          if git grep -InE "$PATTERN" -- . ':(exclude).github/workflows/no-internal-docs.yml'; then
+            echo "Internal-process language found in a tracked file — see message above."
+            exit 1
+          fi
