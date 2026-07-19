@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "neuronscope-cli"
+version = "0.1.0"
+description = "CLI and MCP server for tracing which neurons and attention heads drive a language model's output, built on TransformerLens."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "Rudrendu Paul" }]
+keywords = [
+    "interpretability",
+    "mechanistic-interpretability",
+    "transformer-lens",
+    "llm",
+    "mcp",
+    "cli",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "transformer-lens>=2.0",
+    "torch>=2.0",
+    "click>=8.1",
+    "pydantic>=2.0",
+    "mcp>=1.0",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.urls]
+Homepage = "https://github.com/RudrenduPaul/NeuronScope"
+Repository = "https://github.com/RudrenduPaul/NeuronScope"
+Issues = "https://github.com/RudrenduPaul/NeuronScope/issues"
+
+[project.scripts]
+neuronscope = "neuronscope.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["neuronscope"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
