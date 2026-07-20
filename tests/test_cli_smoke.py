@@ -15,6 +15,16 @@ from neuronscope.cli import main
 PROMPT = "The capital of France is"
 
 
+def test_version_matches_installed_package():
+    from importlib.metadata import version
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["--version"])
+
+    assert result.exit_code == 0, result.output
+    assert version("neuronscope-cli") in result.output
+
+
 def test_trace_json_smoke():
     runner = CliRunner()
     result = runner.invoke(main, ["trace", "gpt2", PROMPT, "--json"])

@@ -4,12 +4,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "neuronscope-cli"
-version = "0.1.0"
+version = "0.1.1"
 description = "CLI and MCP server for tracing which neurons and attention heads drive a language model's output, built on TransformerLens."
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
-authors = [{ name = "Rudrendu Paul" }]
+authors = [
+    { name = "Rudrendu Paul" },
+    { name = "Sourav Nandy" },
+]
 keywords = [
     "interpretability",
     "mechanistic-interpretability",
@@ -40,12 +43,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0"]
+dev = ["pytest>=7.0", "pytest-cov>=4.0"]
 
 [project.urls]
 Homepage = "https://github.com/RudrenduPaul/NeuronScope"
 Repository = "https://github.com/RudrenduPaul/NeuronScope"
 Issues = "https://github.com/RudrenduPaul/NeuronScope/issues"
+"Author - Rudrendu Paul" = "https://github.com/RudrenduPaul"
+"Author - Sourav Nandy" = "https://github.com/Sourav-Nandy-ai"
 
 [project.scripts]
 neuronscope = "neuronscope.cli:main"
