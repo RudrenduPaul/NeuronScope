@@ -7,6 +7,8 @@ neurons responsible, as JSON, from the command line or from an agent over MCP.
 [![PyPI](https://img.shields.io/pypi/v/neuronscope-cli.svg)](https://pypi.org/project/neuronscope-cli/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/RudrenduPaul/NeuronScope/blob/main/LICENSE)
 
+![NeuronScope tracing a real gpt2 prediction from the command line, showing the top attention heads and MLP neurons responsible for the output](docs/demo.gif)
+
 ## Install
 
 ```bash
@@ -261,7 +263,8 @@ Only with resource limits in place. See Known limitations below.
 
 ## Contributing
 
-Issues and pull requests are welcome. To run the test suite locally:
+Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for dev setup,
+where the code lives, and what a PR needs before it merges. Quick version:
 
 ```bash
 pip install -e ".[dev]"
@@ -269,7 +272,8 @@ pytest -v
 ```
 
 CI runs the same suite on Python 3.10, 3.11, and 3.12 on every push and pull request against
-`main`.
+`main`. The suite covers 87% of `neuronscope/` (`pytest --cov=neuronscope`), with the MCP
+server's less-exercised paths (specific error branches) the main gap.
 
 ## License
 
