@@ -65,7 +65,7 @@ those tools.
 ## Quickstart
 
 ```bash
-neuronscope trace gpt2 "The capital of France is Paris. The capital of Japan is"
+neuronscope trace gpt2 "The capital of France is Paris. The capital of Japan is" --top-k 5
 ```
 
 Real output from this exact command (stderr trimmed to the two expected warnings mentioned
@@ -123,10 +123,14 @@ neuronscope trace gpt2 "The capital of France is Paris. The capital of Japan is"
   "predicted_token": " Tokyo",
   "predicted_token_id": 11790,
   "top_neurons": [
-    { "layer": 10, "neuron_index": 97, "activation": 7.839381217956543 }
+    { "layer": 10, "neuron_index": 97, "activation": 7.839381217956543 },
+    { "layer": 11, "neuron_index": 611, "activation": 4.695372581481934 },
+    { "layer": 11, "neuron_index": 2997, "activation": 4.646785736083984 }
   ],
   "top_heads": [
-    { "layer": 9, "head_index": 8, "logit_attribution": 4.067923545837402 }
+    { "layer": 9, "head_index": 8, "logit_attribution": 4.067923545837402 },
+    { "layer": 8, "head_index": 11, "logit_attribution": 2.9028172492980957 },
+    { "layer": 10, "head_index": 7, "logit_attribution": -1.4781968593597412 }
   ]
 }
 ```
