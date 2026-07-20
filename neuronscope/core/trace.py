@@ -46,6 +46,25 @@ class PromptTooLongError(Exception):
         )
 
 
+class LayerOutOfRangeError(Exception):
+    """Raised when --layer falls outside the loaded model's actual transformer block count.
+
+    Without this check, an out-of-range layer reaches TransformerLens's hook-name lookup
+    unvalidated and fails with a raw KeyError naming an internal hook string (for example
+    "blocks.99.hook_mlp_out"), which tells the caller nothing about the actual constraint.
+    This raises before that lookup so the message states the real bound instead.
+    """
+
+    def __init__(self, model_name: str, layer: int, n_layers: int):
+        self.model_name = model_name
+        self.layer = layer
+        self.n_layers = n_layers
+        super().__init__(
+            f"Layer {layer} is out of range: {model_name} has {n_layers} layers "
+            f"(0-{n_layers - 1})."
+        )
+
+
 def _load_and_validate(backend: Backend, model_name: str, prompt: str):
     """Load the model and make sure the prompt fits before any heavy backend work runs."""
     # TransformerLens prints a "Loaded pretrained model ..." line straight to stdout on
@@ -171,6 +190,12 @@ def run_activations(model_name: str, prompt: str) -> ActivationsResponse:
 def run_patch(model_name: str, prompt: str, layer: int, component: str) -> PatchResponse:
     backend = resolve_backend(model_name)
     model = _load_and_validate(backend, model_name, prompt)
+    # Validate before the backend ever builds a hook name from `layer`: TransformerLens's
+    # hook lookup has no bounds check of its own, so an out-of-range layer would otherwise
+    # surface as a raw KeyError on an internal hook string instead of a domain error.
+    n_layers = model.cfg.n_layers
+    if not (0 <= layer < n_layers):
+        raise LayerOutOfRangeError(model.cfg.model_name, layer, n_layers)
     clean, patched_final_logits = backend.patch_activations(model, prompt, layer, component)
 
     baseline_logits = clean.logits[0, -1]

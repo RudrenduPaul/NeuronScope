@@ -9,13 +9,16 @@ of a bare tool-call failure.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
 from mcp.server.fastmcp import FastMCP
+from pydantic import Field
 
+from neuronscope.backends.transformer_lens import COMPONENT_HOOK_TEMPLATES
 from neuronscope.core.registry import UnsupportedModelError
 from neuronscope.core.trace import (
     DEFAULT_TOP_K,
+    LayerOutOfRangeError,
     PromptTooLongError,
     run_activations,
     run_circuit,
@@ -41,6 +44,8 @@ def _error_dict(operation: str, exc: Exception) -> dict[str, Any]:
         error_type = "UnsupportedModelError"
     elif isinstance(exc, PromptTooLongError):
         error_type = "PromptTooLongError"
+    elif isinstance(exc, LayerOutOfRangeError):
+        error_type = "LayerOutOfRangeError"
     else:
         error_type = type(exc).__name__
     return ErrorResponse(operation=operation, error_type=error_type, message=str(exc)).model_dump()
@@ -77,7 +82,15 @@ def activations(model: str, prompt: str) -> dict[str, Any]:
 
 
 @mcp.tool(description="Zero-ablate one component (layer + component name) and report how the output logits changed.")
-def patch(model: str, prompt: str, layer: int, component: str) -> dict[str, Any]:
+def patch(
+    model: str,
+    prompt: str,
+    layer: int,
+    # Sourced from COMPONENT_HOOK_TEMPLATES, the same dict the CLI's `--component`
+    # click.Choice reads its options from, so this tool schema's enum can't drift from
+    # what the CLI actually accepts.
+    component: Annotated[str, Field(json_schema_extra={"enum": list(COMPONENT_HOOK_TEMPLATES)})],
+) -> dict[str, Any]:
     """Ablate one activation and report the output delta.
 
     Args:

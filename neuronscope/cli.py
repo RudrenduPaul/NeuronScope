@@ -1,8 +1,12 @@
 """NeuronScope's command-line interface.
 
-Every command shares the same three exit codes: 0 on success, 1 on a general error
-(including a prompt that is too long for the model's context window), 2 when the
-requested model is not supported by any registered backend.
+Every command shares the same exit code convention: 0 on success; 1 on a general error
+(a prompt too long for the model's context window, a --layer outside the loaded model's
+real layer count, or any other runtime failure); 2 when Click itself rejects the
+invocation before a command body ever runs (an unrecognized --component choice, a missing
+required argument or option, a bad type) -- this is Click's own UsageError.exit_code, not
+a code NeuronScope assigns, so it is never reused for anything else; 3 when the requested
+model name does not resolve to any registered backend.
 """
 
 from __future__ import annotations
@@ -14,8 +18,10 @@ from rich.console import Console
 from rich.table import Table
 
 from neuronscope import __version__
+from neuronscope.backends.transformer_lens import COMPONENT_HOOK_TEMPLATES
 from neuronscope.core.registry import UnsupportedModelError
 from neuronscope.core.trace import (
+    LayerOutOfRangeError,
     PromptTooLongError,
     run_activations,
     run_circuit,
@@ -32,7 +38,11 @@ from neuronscope.schema import (
 
 EXIT_OK = 0
 EXIT_ERROR = 1
-EXIT_UNSUPPORTED_MODEL = 2
+# Click's own UsageError.exit_code is 2 (bad flags, missing required arguments) and is
+# handled entirely by Click before any command body runs -- NeuronScope never raises this
+# itself. Recorded here only so the full 0-3 range is documented in one place.
+EXIT_USAGE_CLICK_OWNED = 2
+EXIT_UNSUPPORTED_MODEL = 3
 
 console = Console()
 error_console = Console(stderr=True)
@@ -44,6 +54,9 @@ def _handle_error(operation: str, exc: Exception, as_json: bool) -> int:
         exit_code = EXIT_UNSUPPORTED_MODEL
     elif isinstance(exc, PromptTooLongError):
         error_type = "PromptTooLongError"
+        exit_code = EXIT_ERROR
+    elif isinstance(exc, LayerOutOfRangeError):
+        error_type = "LayerOutOfRangeError"
         exit_code = EXIT_ERROR
     else:
         error_type = type(exc).__name__
@@ -157,9 +170,9 @@ def activations(model: str, prompt: str, as_json: bool) -> None:
 @click.option(
     "--component",
     required=True,
-    type=click.Choice(
-        ["resid_pre", "resid_mid", "resid_post", "attn_out", "mlp_out", "mlp_post"]
-    ),
+    # Sourced from COMPONENT_HOOK_TEMPLATES, the same dict the MCP server's `patch` tool
+    # schema reads its enum from, so the two lists of valid component names can't drift.
+    type=click.Choice(list(COMPONENT_HOOK_TEMPLATES)),
     help="Which component's activation to zero-ablate at the given layer.",
 )
 @click.option("--json", "as_json", is_flag=True, help="Output a schema-versioned JSON document instead of a table.")

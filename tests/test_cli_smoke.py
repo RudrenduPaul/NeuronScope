@@ -80,14 +80,68 @@ def test_circuit_json_smoke():
     assert "approximate" in payload["method"].lower()
 
 
-def test_unsupported_model_exits_2():
+def test_unsupported_model_exits_3():
     runner = CliRunner()
     result = runner.invoke(main, ["trace", "not-a-real-model-xyz", PROMPT, "--json"])
 
-    assert result.exit_code == 2, result.output
+    assert result.exit_code == 3, result.output
     payload = json.loads(result.output)
     assert payload["error_type"] == "UnsupportedModelError"
     assert "transformer_lens" in payload["message"]
+
+
+def test_bad_component_choice_exits_2_click_usage_error():
+    # A bad --component value never reaches NeuronScope's own error handling -- Click
+    # rejects it during argument parsing and exits 2 itself. This must stay distinct from
+    # exit code 3 (unsupported model), which is a NeuronScope domain error, not a usage
+    # mistake.
+    runner = CliRunner()
+    result = runner.invoke(
+        main, ["patch", "gpt2", PROMPT, "--layer", "0", "--component", "not_a_component"]
+    )
+
+    assert result.exit_code == 2, result.output
+    assert "not_a_component" in result.output
+    assert "Traceback" not in result.output
+
+
+def test_missing_required_argument_exits_2_click_usage_error():
+    # Same distinction from the other direction: a missing PROMPT argument is also a
+    # Click usage error (exit 2), not an "unsupported model" domain error (exit 3).
+    runner = CliRunner()
+    result = runner.invoke(main, ["trace", "gpt2"])
+
+    assert result.exit_code == 2, result.output
+    assert "Traceback" not in result.output
+
+
+def test_layer_out_of_range_exits_1_plain():
+    runner = CliRunner()
+    result = runner.invoke(
+        main, ["patch", "gpt2", PROMPT, "--layer", "99", "--component", "mlp_out"]
+    )
+
+    assert result.exit_code == 1, result.output
+    assert "99" in result.output
+    assert "12" in result.output
+    assert "Traceback" not in result.output
+    assert "KeyError" not in result.output
+
+
+def test_layer_out_of_range_exits_1_json():
+    runner = CliRunner()
+    result = runner.invoke(
+        main,
+        ["patch", "gpt2", PROMPT, "--layer", "99", "--component", "mlp_out", "--json"],
+    )
+
+    assert result.exit_code == 1, result.output
+    payload = json.loads(result.output)
+    assert payload["error_type"] == "LayerOutOfRangeError"
+    assert payload["operation"] == "patch"
+    assert "99" in payload["message"]
+    assert "12" in payload["message"]
+    assert "gpt2" in payload["message"]
 
 
 def test_help_text_is_present_for_every_command():
