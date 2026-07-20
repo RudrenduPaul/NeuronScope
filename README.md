@@ -7,7 +7,7 @@ neurons responsible, as JSON, from the command line or from an agent over MCP.
 [![PyPI](https://img.shields.io/pypi/v/neuronscope-cli.svg)](https://pypi.org/project/neuronscope-cli/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/RudrenduPaul/NeuronScope/blob/main/LICENSE)
 
-![NeuronScope tracing a real gpt2 prediction from the command line, showing the top attention heads and MLP neurons responsible for the output](docs/demo.gif)
+![NeuronScope tracing a real gpt2 prediction from the command line, showing the top attention heads and MLP neurons responsible for the output](https://raw.githubusercontent.com/RudrenduPaul/NeuronScope/main/docs/demo.gif)
 
 ## Install
 
