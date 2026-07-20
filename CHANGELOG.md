@@ -3,6 +3,12 @@
 All notable changes to NeuronScope are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.2] - 2026-07-20
+
+### Fixed
+- README's demo GIF now uses an absolute URL instead of a repo-relative path, so it
+  renders on PyPI's project page too, not just on GitHub.
+
 ## [0.1.1] - 2026-07-20
 
 ### Added
