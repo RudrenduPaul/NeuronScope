@@ -4,20 +4,23 @@ Ask a language model "why did you say that" and get back the actual attention he
 neurons responsible, as JSON, from the command line or from an agent over MCP.
 
 [![CI](https://github.com/RudrenduPaul/NeuronScope/actions/workflows/ci.yml/badge.svg)](https://github.com/RudrenduPaul/NeuronScope/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/neuronscope-cli.svg)](https://pypi.org/project/neuronscope-cli/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/RudrenduPaul/NeuronScope/blob/main/LICENSE)
 
 ## Install
 
-Not on PyPI yet, so install from source:
+```bash
+pip install neuronscope-cli
+```
+
+That gets you the `neuronscope` command. To install from source instead (for development or to
+track `main`):
 
 ```bash
 git clone https://github.com/RudrenduPaul/NeuronScope
 cd NeuronScope
 pip install -e .
 ```
-
-That gets you the `neuronscope` command. A published package (`pip install neuronscope-cli`)
-is planned but not live yet; if you try it today you'll get a 404 from PyPI.
 
 **First run of any command** downloads the requested model from the HuggingFace Hub (`gpt2`
 is about 500MB) and prints two lines to stderr that are expected, not errors: a CPU-fallback
