@@ -3,6 +3,16 @@
 All notable changes to NeuronScope are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.3] - 2026-08-02
+
+### Fixed
+- Pinned `mcp` to `>=1.0,<2.0` in `pyproject.toml`. The `mcp` package's 2.0.0 release
+  removed `mcp.server.fastmcp`, which `neuronscope/mcp_server.py` imports directly — a
+  fresh `pip install neuronscope-cli` was resolving `mcp` 2.0.0 and `neuronscope
+  mcp-server` crashed with `ModuleNotFoundError: No module named 'mcp.server.fastmcp'`.
+  Verified against `mcp==1.9.4` that the existing FastMCP-based server code still works;
+  capping the range restores it without an API port.
+
 ## [0.1.2] - 2026-07-20
 
 ### Fixed
