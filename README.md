@@ -55,9 +55,9 @@ components drove this output" without writing TransformerLens code directly.
   shape via `.model_dump()`, so a CLI call and an MCP tool call produce the same document
   for the same input.
 - Model support is whatever `transformer_lens.HookedTransformer.from_pretrained` supports.
-  As of the `transformer-lens` version this repo currently depends on, that's 247 pretrained
-  checkpoints and aliases (`OFFICIAL_MODEL_NAMES`), covering GPT-2, Pythia, Llama, Gemma,
-  Qwen, and more. Small models like `gpt2` run comfortably on CPU.
+  Installing `neuronscope-cli` today pulls TransformerLens 3.6.0, which supports 249
+  pretrained checkpoints and aliases (`OFFICIAL_MODEL_NAMES`), covering GPT-2, Pythia,
+  Llama, Gemma, Qwen, and more. Small models like `gpt2` run comfortably on CPU.
 
 NeuronScope does not replace TransformerLens, [nnsight](https://nnsight.net/),
 [SAELens](https://github.com/jbloomAus/SAELens), Anthropic's
@@ -192,17 +192,17 @@ All five of these are real, actively maintained projects doing different jobs. T
 compares CLI/JSON-agent-output surface and model coverage, not depth of interpretability
 research, where TransformerLens, nnsight, SAELens, circuit-tracer, and Neuronpedia are all
 more mature than NeuronScope. Star counts, release info, and last-push dates below were
-pulled from each project's GitHub API on 2026-07-19 and will drift over time; check the repos
+pulled from each project's GitHub API on 2026-08-03 and will drift over time; check the repos
 directly for current numbers.
 
 | Project | Stars | Last activity | CLI | Agent-callable structured output | Model coverage |
 |---|---|---|---|---|---|
-| [TransformerLens](https://github.com/TransformerLensOrg/TransformerLens) | 3,689 | v3.5.1 released 2026-07-01, pushed 2026-07-16 | No (Python library) | No | 247 pretrained checkpoints/aliases (its own official list) |
-| [nnsight](https://github.com/ndif-team/nnsight) | 995 | v0.7.0 released 2026-05-05, pushed 2026-07-14 | No (Python library) | No (returns tensors/Python objects) | Any HuggingFace or PyTorch model generically, no fixed list |
-| [circuit-tracer](https://github.com/decoderesearch/circuit-tracer) (Anthropic-authored, moved from `safety-research/circuit-tracer`) | 2,864 | v0.5.2 released 2026-07-18 | Yes | JSON attribution-graph export; no MCP server | Fixed transcoder allowlist: Gemma-2 (2B), Gemma-3 (270M-27B), Llama-3.2 (1B), Llama-3.1 (8B Instruct), Qwen-3 (0.6B-14B), GPT-OSS (20B) |
-| [SAELens](https://github.com/jbloomAus/SAELens) | 1,476 | v6.46.0 released 2026-07-13, pushed 2026-07-13 | No (Python library) | No | Any PyTorch model generically; deepest integration is with TransformerLens |
-| [Neuronpedia](https://github.com/hijohnnylin/neuronpedia) | 1,070 | continuously deployed, tag v1.0.795 on 2026-07-17 | No (hosted web app + REST API) | REST API returns JSON; MCP access exists only via an unofficial third-party wrapper, not the official repo | Models loadable through TransformerLens's model table (GPT-2, Gemma-2, Llama, DeepSeek, etc.) |
-| **NeuronScope** (this project) | New, pre-release | this commit | Yes | Yes: `--json` on every command, plus a native MCP server returning the same schema | Whatever TransformerLens's `HookedTransformer.from_pretrained` supports: 247 checkpoints/aliases |
+| [TransformerLens](https://github.com/TransformerLensOrg/TransformerLens) | 3,750 | v3.6.0 released 2026-07-28, pushed 2026-08-03 | No (Python library) | No | 249 pretrained checkpoints/aliases (its own official list) |
+| [nnsight](https://github.com/ndif-team/nnsight) | 1,014 | v0.7.0 released 2026-05-05, pushed 2026-07-30 | No (Python library) | No (returns tensors/Python objects) | Any HuggingFace or PyTorch model generically, no fixed list |
+| [circuit-tracer](https://github.com/decoderesearch/circuit-tracer) (Anthropic-authored, moved from `safety-research/circuit-tracer`) | 2,882 | v0.5.2 released 2026-07-18, pushed 2026-07-18 | Yes | JSON attribution-graph export; no MCP server | Fixed transcoder allowlist: Gemma-2 (2B), Gemma-3 (270M-27B), Llama-3.2 (1B), Llama-3.1 (8B Instruct), Qwen-3 (0.6B-14B), GPT-OSS (20B) |
+| [SAELens](https://github.com/jbloomAus/SAELens) | 1,492 | v6.47.0 released 2026-07-28, pushed 2026-07-28 | No (Python library) | No | Any PyTorch model generically; deepest integration is with TransformerLens |
+| [Neuronpedia](https://github.com/hijohnnylin/neuronpedia) | 1,093 | continuously deployed, tag v1.0.795 | No (hosted web app + REST API) | REST API returns JSON; MCP access exists only via an unofficial third-party wrapper, not the official repo | Models loadable through TransformerLens's model table (GPT-2, Gemma-2, Llama, DeepSeek, etc.) |
+| **NeuronScope** (this project) | 1 | this commit | Yes | Yes: `--json` on every command, plus a native MCP server returning the same schema | Whatever TransformerLens's `HookedTransformer.from_pretrained` supports: 249 checkpoints/aliases |
 
 The honest differentiation is narrow: NeuronScope is the only one of these with a CLI, a
 native MCP server, and a versioned JSON schema together in one package, and it's
@@ -231,7 +231,7 @@ database (Neuronpedia). It's a CLI and MCP wrapper around one slice of Transform
 functionality.
 
 **What models are supported?**
-Anything `transformer_lens.HookedTransformer.from_pretrained` supports, which today is 247
+Anything `transformer_lens.HookedTransformer.from_pretrained` supports, which today is 249
 checkpoints and aliases spanning GPT-2, Pythia, Llama, Gemma, Qwen, and others. Run
 `python -c "from transformer_lens.loading_from_pretrained import OFFICIAL_MODEL_NAMES; print(len(OFFICIAL_MODEL_NAMES))"`
 in your own environment to get the exact count for your installed version, since
@@ -247,6 +247,27 @@ on being exact. Pass `device="mps"` explicitly in your own code if you want it a
 **Is it safe to expose the MCP server to an untrusted agent?**
 Only with resource limits in place. See Known limitations below.
 
+**How is NeuronScope different from circuit-tracer, the other CLI tool in this list?**
+circuit-tracer does deeper circuit analysis (full attribution graphs from trained
+transcoders) but only for a fixed allowlist of models: Gemma-2, Gemma-3, Llama-3.1/3.2,
+Qwen-3, and GPT-OSS. NeuronScope trades that depth for breadth: it works with any of
+TransformerLens's 249 supported checkpoints with no transcoder training step, and ships an
+MCP server so an agent can call it directly. The cost is that NeuronScope does
+single-component logit attribution and zero-ablation, not transcoder-based path patching.
+
+**Does the installed version always match what's on PyPI?**
+Run `neuronscope --version` after installing to check. `pip install neuronscope-cli` pulls
+whatever release PyPI has published most recently; the code on this repo's `main` branch can
+be ahead of that between releases. Installing from source (`pip install -e .`) always tracks
+`main` exactly, including whatever hasn't been released yet.
+
+**What license is NeuronScope under, and can I use it commercially?**
+MIT. You can use, modify, and redistribute it in commercial and closed-source projects,
+with attribution and the license notice kept intact. The dependencies it pulls in
+(TransformerLens, PyTorch, the `mcp` package) carry their own licenses; check those
+separately if you're redistributing a bundled product rather than just calling
+`neuronscope-cli` as a dependency.
+
 ## Known limitations
 
 - **`circuit` is an approximation.** It ranks components by logit attribution and measures
@@ -260,6 +281,12 @@ Only with resource limits in place. See Known limitations below.
   agent can call it, put a resource limit around the process (a cgroup, `ulimit`, or a
   container memory/CPU cap) rather than relying on NeuronScope to refuse an oversized
   request on its own.
+- **`HookedTransformer.from_pretrained` is deprecated upstream.** TransformerLens 3.6.0
+  emits a `DeprecationWarning` pointing at `TransformerBridge.boot_transformers` as the
+  replacement. It still works today, and every command shown in this README ran on it, but
+  NeuronScope's backend hasn't migrated yet. Tracked as an open item; migrating would be a
+  change inside `neuronscope/backends/transformer_lens.py`, not a change to any CLI command
+  or MCP tool signature.
 
 ## Contributing
 
