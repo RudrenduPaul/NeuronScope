@@ -1,11 +1,11 @@
 # NeuronScope
 
-Ask a language model "why did you say that" and get back the actual attention heads and
-neurons responsible, as JSON, from the command line or from an agent over MCP.
-
 [![CI](https://github.com/RudrenduPaul/NeuronScope/actions/workflows/ci.yml/badge.svg)](https://github.com/RudrenduPaul/NeuronScope/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/neuronscope-cli.svg)](https://pypi.org/project/neuronscope-cli/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/RudrenduPaul/NeuronScope/blob/main/LICENSE)
+
+Ask a language model "why did you say that" and get back the actual attention heads and
+neurons responsible, as JSON, from the command line or from an agent over MCP.
 
 ![NeuronScope tracing a real gpt2 prediction from the command line, showing the top attention heads and MLP neurons responsible for the output](https://raw.githubusercontent.com/RudrenduPaul/NeuronScope/main/docs/demo.gif)
 
@@ -24,48 +24,11 @@ cd NeuronScope
 pip install -e .
 ```
 
-**First run of any command** downloads the requested model from the HuggingFace Hub (`gpt2`
-is about 500MB) and prints two lines to stderr that are expected, not errors: a CPU-fallback
-notice if you don't have a CUDA GPU, and an unauthenticated-HF-Hub rate-limit notice. Neither
-one means anything broke.
-
-## What it does
-
-NeuronScope is a CLI and [MCP](https://modelcontextprotocol.io) server built on top of
-[TransformerLens](https://github.com/TransformerLensOrg/TransformerLens). TransformerLens
-does the actual model loading, hooking, and activation math; NeuronScope adds a stable CLI,
-a versioned JSON schema, and an MCP server around it, so a script or an agent can ask "which
-components drove this output" without writing TransformerLens code directly.
-
-- **`trace`**: runs a prompt through the model and ranks attention heads by direct logit
-  attribution to the predicted token, and MLP neurons by activation magnitude at the final
-  prompt position.
-- **`activations`**: dumps shape, mean, std, min/max, and the max-activating sequence
-  position for every layer's residual stream, MLP neuron activations, and attention pattern.
-- **`patch`**: zero-ablates one component (`resid_pre`, `resid_mid`, `resid_post`,
-  `attn_out`, `mlp_out`, or `mlp_post`) at a given layer and reports how the predicted token
-  and its logit changed.
-- **`circuit`**: a best-effort automated circuit sketch. Ranks candidate heads/neurons by
-  logit attribution, then measures each one's individual causal effect via single-component
-  ablation. This is not full path-patching with clean/corrupted prompt pairs and does not
-  capture interaction effects between components. The `--json` output says so explicitly in
-  its `method` field.
-- Every command supports `--json` for a `schema_version`-stamped document instead of a
-  table, and the same four operations are exposed as MCP tools returning the identical
-  shape via `.model_dump()`, so a CLI call and an MCP tool call produce the same document
-  for the same input.
-- Model support is whatever `transformer_lens.HookedTransformer.from_pretrained` supports.
-  Installing `neuronscope-cli` today pulls TransformerLens 3.6.0, which supports 249
-  pretrained checkpoints and aliases (`OFFICIAL_MODEL_NAMES`), covering GPT-2, Pythia,
-  Llama, Gemma, Qwen, and more. Small models like `gpt2` run comfortably on CPU.
-
-NeuronScope does not replace TransformerLens, [nnsight](https://nnsight.net/),
-[SAELens](https://github.com/jbloomAus/SAELens), Anthropic's
-[circuit-tracer](https://github.com/decoderesearch/circuit-tracer), or
-[Neuronpedia](https://www.neuronpedia.org/). It wraps TransformerLens for one narrower job:
-fast, scriptable, agent-callable component tracing on a single prompt. It leaves deeper
-mechanistic work (SAE training, transcoder-based circuit graphs, hosted feature browsing) to
-those tools.
+> [!NOTE]
+> The first run of any command downloads the requested model from the HuggingFace Hub
+> (`gpt2` is about 500MB) and prints two lines to stderr that are expected, not errors: a
+> CPU-fallback notice if you don't have a CUDA GPU, and an unauthenticated-HF-Hub
+> rate-limit notice. Neither one means anything broke.
 
 ## Quickstart
 
@@ -140,6 +103,44 @@ neuronscope trace gpt2 "The capital of France is Paris. The capital of Japan is"
 }
 ```
 
+## What it does
+
+NeuronScope is a CLI and [MCP](https://modelcontextprotocol.io) server built on top of
+[TransformerLens](https://github.com/TransformerLensOrg/TransformerLens). TransformerLens
+does the actual model loading, hooking, and activation math; NeuronScope adds a stable CLI,
+a versioned JSON schema, and an MCP server around it, so a script or an agent can ask "which
+components drove this output" without writing TransformerLens code directly.
+
+- **`trace`**: runs a prompt through the model and ranks attention heads by direct logit
+  attribution to the predicted token, and MLP neurons by activation magnitude at the final
+  prompt position.
+- **`activations`**: dumps shape, mean, std, min/max, and the max-activating sequence
+  position for every layer's residual stream, MLP neuron activations, and attention pattern.
+- **`patch`**: zero-ablates one component (`resid_pre`, `resid_mid`, `resid_post`,
+  `attn_out`, `mlp_out`, or `mlp_post`) at a given layer and reports how the predicted token
+  and its logit changed.
+- **`circuit`**: a best-effort automated circuit sketch. Ranks candidate heads/neurons by
+  logit attribution, then measures each one's individual causal effect via single-component
+  ablation. This is not full path-patching with clean/corrupted prompt pairs and does not
+  capture interaction effects between components. The `--json` output says so explicitly in
+  its `method` field.
+- Every command supports `--json` for a `schema_version`-stamped document instead of a
+  table, and the same four operations are exposed as MCP tools returning the identical
+  shape via `.model_dump()`, so a CLI call and an MCP tool call produce the same document
+  for the same input.
+- Model support is whatever `transformer_lens.HookedTransformer.from_pretrained` supports.
+  Installing `neuronscope-cli` today pulls TransformerLens 3.6.0, which supports 249
+  pretrained checkpoints and aliases (`OFFICIAL_MODEL_NAMES`), covering GPT-2, Pythia,
+  Llama, Gemma, Qwen, and more. Small models like `gpt2` run comfortably on CPU.
+
+NeuronScope does not replace TransformerLens, [nnsight](https://nnsight.net/),
+[SAELens](https://github.com/jbloomAus/SAELens), Anthropic's
+[circuit-tracer](https://github.com/decoderesearch/circuit-tracer), or
+[Neuronpedia](https://www.neuronpedia.org/). It wraps TransformerLens for one narrower job:
+fast, scriptable, agent-callable component tracing on a single prompt. It leaves deeper
+mechanistic work (SAE training, transcoder-based circuit graphs, hosted feature browsing) to
+those tools.
+
 ## CLI reference
 
 Every command takes `MODEL` (any name `HookedTransformer.from_pretrained` accepts, for
@@ -169,6 +170,12 @@ neuronscope mcp-server
 
 Starts an MCP server over stdio that exposes `trace`, `activations`, `patch`, and `circuit`
 as MCP tools, with the same arguments and the same JSON schema as the CLI's `--json` output.
+
+> [!WARNING]
+> NeuronScope puts no size cap or timeout on model loading or forward passes. If you expose
+> this MCP server somewhere an untrusted agent can call it, put a resource limit around the
+> process (a cgroup, `ulimit`, or a container memory/CPU cap) rather than relying on
+> NeuronScope to refuse an oversized request on its own.
 
 To register it with an MCP host, add:
 
