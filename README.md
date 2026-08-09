@@ -157,6 +157,10 @@ Global: `neuronscope --version`, `neuronscope <command> --help`. Exit codes: `0`
 `1` a runtime error (prompt too long for the model's context window, `--layer` out of range,
 etc.), `2` a Click usage error (bad flags), `3` an unsupported model name.
 
+![neuronscope circuit ranking candidate heads/neurons by logit attribution and measuring each one's causal effect via single-component ablation](https://raw.githubusercontent.com/RudrenduPaul/NeuronScope/main/docs/demo-circuit.gif)
+
+![neuronscope patch zero-ablating one component at a given layer and reporting how the predicted token and its logit changed](https://raw.githubusercontent.com/RudrenduPaul/NeuronScope/main/docs/demo-patch.gif)
+
 ## MCP server
 
 ```bash
