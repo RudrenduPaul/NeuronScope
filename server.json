@@ -1,0 +1,35 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.RudrenduPaul/neuronscope",
+  "description": "Traces which neurons and attention heads drive a language model's output via MCP tools.",
+  "repository": {
+    "url": "https://github.com/RudrenduPaul/NeuronScope",
+    "source": "github"
+  },
+  "version": "0.1.5",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "identifier": "neuronscope-cli",
+      "version": "0.1.5",
+      "runtimeHint": "uvx",
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--from",
+          "value": "neuronscope-cli"
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "positional",
+          "valueHint": "script_name",
+          "value": "neuronscope-mcp"
+        }
+      ],
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
