@@ -11,7 +11,7 @@ git clone https://github.com/RudrenduPaul/NeuronScope
 cd NeuronScope
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev,mcp]"
 ```
 
 ## Running the test suite

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "neuronscope-cli"
-version = "0.1.4"
+version = "0.1.5"
 description = "CLI and MCP server for tracing which neurons and attention heads drive a language model's output, built on TransformerLens."
 readme = "README.md"
 license = { text = "MIT" }
@@ -43,12 +43,12 @@ dependencies = [
     "torch>=2.0",
     "click>=8.1",
     "pydantic>=2.0",
-    "mcp>=1.0,<2.0",
     "rich>=13.0",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=7.0", "pytest-cov>=4.0"]
+mcp = ["mcp>=1.0,<2.0"]
 
 [project.urls]
 Homepage = "https://github.com/RudrenduPaul/NeuronScope"
@@ -59,6 +59,7 @@ Issues = "https://github.com/RudrenduPaul/NeuronScope/issues"
 
 [project.scripts]
 neuronscope = "neuronscope.cli:main"
+neuronscope-mcp = "neuronscope.mcp_server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["neuronscope"]

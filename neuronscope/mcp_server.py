@@ -125,5 +125,11 @@ def run_server() -> None:
     mcp.run(transport="stdio")
 
 
+# Alias for the `neuronscope-mcp` console-script entry point (pyproject.toml
+# [project.scripts]), so this module works both as `neuronscope mcp-server`
+# (the CLI subcommand) and as its own standalone binary.
+main = run_server
+
+
 if __name__ == "__main__":
-    run_server()
+    main()

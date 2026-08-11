@@ -1,5 +1,8 @@
 # NeuronScope
 
+<!-- mcp-name: io.github.RudrenduPaul/neuronscope -->
+<!-- Ownership-proof string for registry.modelcontextprotocol.io publishing. Do not remove. -->
+
 [![CI](https://github.com/RudrenduPaul/NeuronScope/actions/workflows/ci.yml/badge.svg)](https://github.com/RudrenduPaul/NeuronScope/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/neuronscope-cli.svg)](https://pypi.org/project/neuronscope-cli/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/RudrenduPaul/NeuronScope/blob/main/LICENSE)
@@ -162,14 +165,55 @@ etc.), `2` a Click usage error (bad flags), `3` an unsupported model name.
 
 ![neuronscope patch zero-ablating one component at a given layer and reporting how the predicted token and its logit changed](https://raw.githubusercontent.com/RudrenduPaul/NeuronScope/main/docs/demo-patch.gif)
 
-## MCP server
+## MCP Server
+
+NeuronScope ships a [Model Context Protocol](https://modelcontextprotocol.io) server so an AI
+agent (Claude, Cursor, or any MCP-compatible client) can trace, inspect, ablate, and sketch
+circuits directly, without a human invoking the CLI by hand.
+
+Install the extra:
 
 ```bash
-neuronscope mcp-server
+pip install "neuronscope-cli[mcp]"
 ```
 
-Starts an MCP server over stdio that exposes `trace`, `activations`, `patch`, and `circuit`
-as MCP tools, with the same arguments and the same JSON schema as the CLI's `--json` output.
+Add it to your MCP client's config (for Claude Desktop, `claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "neuronscope": {
+      "command": "uvx",
+      "args": ["--from", "neuronscope-cli", "neuronscope-mcp"]
+    }
+  }
+}
+```
+
+The server exposes four tools, `trace`, `activations`, `patch`, and `circuit`, each returning
+the identical pydantic-model-shaped JSON the CLI's `--json` flag prints, via `.model_dump()`, so
+an agent calling this server and a script calling the CLI get the same document for the same
+input. A real `trace` call and its response:
+
+```
+trace(model="gpt2", prompt="The capital of France is Paris. The capital of Japan is", top_k=3)
+
+{
+  "schema_version": 1,
+  "operation": "trace",
+  "predicted_token": " Tokyo",
+  "predicted_token_id": 11790,
+  "top_neurons": [
+    { "layer": 10, "neuron_index": 97, "activation": 7.839381217956543 }
+  ],
+  "top_heads": [
+    { "layer": 9, "head_index": 8, "logit_attribution": 4.067923545837402 }
+  ]
+}
+```
+
+Errors never raise across the tool boundary: every handler catches its exceptions and returns a
+structured `ErrorResponse` dict instead, so a calling agent always gets a parseable result.
 
 > [!WARNING]
 > NeuronScope puts no size cap or timeout on model loading or forward passes. If you expose
@@ -177,25 +221,17 @@ as MCP tools, with the same arguments and the same JSON schema as the CLI's `--j
 > process (a cgroup, `ulimit`, or a container memory/CPU cap) rather than relying on
 > NeuronScope to refuse an oversized request on its own.
 
-To register it with an MCP host, add:
-
-```json
-{
-  "mcpServers": {
-    "neuronscope": {
-      "command": "neuronscope",
-      "args": ["mcp-server"]
-    }
-  }
-}
-```
+Transport is stdio, so there is nothing to host: the MCP client spawns the server as a local
+subprocess. Source: [`neuronscope/mcp_server.py`](neuronscope/mcp_server.py).
 
 - **Claude Code** reads this from a project-level `.mcp.json` in your repo root, or you can
-  add it with `claude mcp add neuronscope -- neuronscope mcp-server`.
+  add it with `claude mcp add neuronscope -- neuronscope-mcp`.
 - **Claude Desktop** reads this from its `claude_desktop_config.json`
   (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS,
   `%APPDATA%\Claude\claude_desktop_config.json` on Windows), under the same
   `"mcpServers"` key.
+- The `neuronscope mcp-server` CLI subcommand still works as a local, non-`uvx` alternative
+  that runs the same server over stdio from an existing install.
 
 ## How it compares
 
@@ -305,7 +341,7 @@ Issues and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for
 where the code lives, and what a PR needs before it merges. Quick version:
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev,mcp]"
 pytest -v
 ```
 
