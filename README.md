@@ -7,6 +7,8 @@
 [![PyPI](https://img.shields.io/pypi/v/neuronscope-cli.svg)](https://pypi.org/project/neuronscope-cli/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/RudrenduPaul/NeuronScope/blob/main/LICENSE)
 
+<a href="https://www.producthunt.com/products/neuronscope?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-neuronscope" target="_blank" rel="noopener noreferrer"><img alt="NeuronScope - Traces LLM outputs to the neurons and heads that caused them | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1222875&theme=light&t=1786882007537"></a>
+
 Ask a language model "why did you say that" and get back the actual attention heads and
 neurons responsible, as JSON, from the command line or from an agent over MCP.
 
