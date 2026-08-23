@@ -17,6 +17,7 @@ import torch
 
 from neuronscope.backends.base import Backend
 from neuronscope.backends.transformer_lens import TransformerLensBackend
+from neuronscope.core.limits import check_model_size, model_load_slot
 from neuronscope.core.registry import resolve_backend
 from neuronscope.schema import (
     ActivationsResponse,
@@ -67,11 +68,18 @@ class LayerOutOfRangeError(Exception):
 
 def _load_and_validate(backend: Backend, model_name: str, prompt: str):
     """Load the model and make sure the prompt fits before any heavy backend work runs."""
-    # TransformerLens prints a "Loaded pretrained model ..." line straight to stdout on
-    # every load, with no way to disable it via from_pretrained's own arguments. Silence
-    # it here so it can never end up mixed into --json output or an MCP tool result.
-    with contextlib.redirect_stdout(io.StringIO()):
-        model = backend.load_model(model_name)
+    # Two resource caps, both bypassable only by raising the env vars that configure
+    # them (see core/limits.py): reject an oversized model before paying for the
+    # download, and reject a load that would exceed the configured concurrency cap
+    # instead of piling more resident models into memory.
+    check_model_size(model_name)
+    with model_load_slot():
+        # TransformerLens prints a "Loaded pretrained model ..." line straight to stdout
+        # on every load, with no way to disable it via from_pretrained's own arguments.
+        # Silence it here so it can never end up mixed into --json output or an MCP tool
+        # result.
+        with contextlib.redirect_stdout(io.StringIO()):
+            model = backend.load_model(model_name)
     # model.to_tokens() silently truncates to n_ctx by default (truncate=True), which
     # would make this check never fire. Count untruncated tokens explicitly so an
     # over-length prompt is caught here instead of quietly analyzing a truncated prompt.
