@@ -15,6 +15,7 @@ from mcp.server.fastmcp import FastMCP
 from pydantic import Field
 
 from neuronscope.backends.transformer_lens import COMPONENT_HOOK_TEMPLATES
+from neuronscope.core.limits import ModelTooLargeError, TooManyConcurrentModelLoadsError
 from neuronscope.core.registry import UnsupportedModelError
 from neuronscope.core.trace import (
     DEFAULT_TOP_K,
@@ -46,6 +47,10 @@ def _error_dict(operation: str, exc: Exception) -> dict[str, Any]:
         error_type = "PromptTooLongError"
     elif isinstance(exc, LayerOutOfRangeError):
         error_type = "LayerOutOfRangeError"
+    elif isinstance(exc, ModelTooLargeError):
+        error_type = "ModelTooLargeError"
+    elif isinstance(exc, TooManyConcurrentModelLoadsError):
+        error_type = "TooManyConcurrentModelLoadsError"
     else:
         error_type = type(exc).__name__
     return ErrorResponse(operation=operation, error_type=error_type, message=str(exc)).model_dump()

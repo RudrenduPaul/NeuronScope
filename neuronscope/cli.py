@@ -19,6 +19,7 @@ from rich.table import Table
 
 from neuronscope import __version__
 from neuronscope.backends.transformer_lens import COMPONENT_HOOK_TEMPLATES
+from neuronscope.core.limits import ModelTooLargeError, TooManyConcurrentModelLoadsError
 from neuronscope.core.registry import UnsupportedModelError
 from neuronscope.core.trace import (
     LayerOutOfRangeError,
@@ -57,6 +58,12 @@ def _handle_error(operation: str, exc: Exception, as_json: bool) -> int:
         exit_code = EXIT_ERROR
     elif isinstance(exc, LayerOutOfRangeError):
         error_type = "LayerOutOfRangeError"
+        exit_code = EXIT_ERROR
+    elif isinstance(exc, ModelTooLargeError):
+        error_type = "ModelTooLargeError"
+        exit_code = EXIT_ERROR
+    elif isinstance(exc, TooManyConcurrentModelLoadsError):
+        error_type = "TooManyConcurrentModelLoadsError"
         exit_code = EXIT_ERROR
     else:
         error_type = type(exc).__name__

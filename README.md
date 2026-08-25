@@ -218,10 +218,12 @@ Errors never raise across the tool boundary: every handler catches its exception
 structured `ErrorResponse` dict instead, so a calling agent always gets a parseable result.
 
 > [!WARNING]
-> NeuronScope puts no size cap or timeout on model loading or forward passes. If you expose
-> this MCP server somewhere an untrusted agent can call it, put a resource limit around the
-> process (a cgroup, `ulimit`, or a container memory/CPU cap) rather than relying on
-> NeuronScope to refuse an oversized request on its own.
+> NeuronScope caps model size (2B parameters by default, `NEURONSCOPE_MAX_MODEL_PARAMS`)
+> and how many models can load at once (1 by default, `NEURONSCOPE_MAX_CONCURRENT_LOADS`),
+> but puts no timeout on model loading or forward passes. If you expose this MCP server
+> somewhere an untrusted agent can call it, still put a resource limit around the process
+> (a cgroup, `ulimit`, or a container memory/CPU cap) as defense in depth rather than
+> relying on these in-process caps alone.
 
 Transport is stdio, so there is nothing to host: the MCP client spawns the server as a local
 subprocess. Source: [`neuronscope/mcp_server.py`](neuronscope/mcp_server.py).
@@ -324,12 +326,19 @@ separately if you're redistributing a bundled product rather than just calling
   does not do full path-patching with clean/corrupted prompt pairs, and it will not catch
   interaction effects between components. The `--json` output states this in its `method`
   field so a caller doesn't have to trust prose to know the caveat.
-- **No size cap or timeout on model loading or forward passes.** NeuronScope loads whatever
-  model weights the caller asks for and runs the forward pass to completion, with no built-in
-  limit on model size or wall-clock time. If you run the MCP server somewhere an untrusted
-  agent can call it, put a resource limit around the process (a cgroup, `ulimit`, or a
-  container memory/CPU cap) rather than relying on NeuronScope to refuse an oversized
-  request on its own.
+- **No timeout on model loading or forward passes.** Once a request passes the resource
+  caps below, NeuronScope runs the load and the forward pass to completion with no
+  built-in wall-clock limit. If you run the MCP server somewhere an untrusted agent can
+  call it, put a resource limit around the process (a cgroup, `ulimit`, or a container
+  memory/CPU cap) as defense in depth.
+- **Model size and load concurrency are capped, but only in-process.** `neuronscope/core/limits.py`
+  rejects a model over `NEURONSCOPE_MAX_MODEL_PARAMS` (2B parameters by default) before any
+  weights are downloaded, and rejects a load once `NEURONSCOPE_MAX_CONCURRENT_LOADS` (1 by
+  default) other loads are already in flight, both with a structured error rather than a
+  hang or a crash. The size check is best-effort: if a model's parameter count can't be
+  determined (for example, fully offline with nothing cached yet), it fails open rather
+  than blocking a legitimate request, so it's not a hard guarantee on its own -- pair it
+  with a process-level resource limit for untrusted deployments.
 - **`HookedTransformer.from_pretrained` is deprecated upstream.** TransformerLens 3.6.0
   emits a `DeprecationWarning` pointing at `TransformerBridge.boot_transformers` as the
   replacement. It still works today, and every command shown in this README ran on it, but
