@@ -6,12 +6,12 @@
     "url": "https://github.com/RudrenduPaul/NeuronScope",
     "source": "github"
   },
-  "version": "0.1.5",
+  "version": "0.1.7",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "neuronscope-cli",
-      "version": "0.1.5",
+      "version": "0.1.7",
       "runtimeHint": "uvx",
       "runtimeArguments": [
         {

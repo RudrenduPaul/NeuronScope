@@ -3,6 +3,17 @@
 All notable changes to NeuronScope are documented here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.7] - 2026-09-24
+
+### Changed
+- Runtime dependency `transformer-lens` is now capped below 4 (`>=2.0,<4`), so a fresh
+  install no longer resolves a major release this project has not been tested against.
+- Dependencies and the `uv.lock` lockfile refreshed to current releases.
+- Python support floor unchanged (3.10 or newer).
+- `server.json` version synced to the package version.
+- PyPI publishing continues through Trusted Publishing (`publish-pypi.yml`); no npm
+  package is published for this project.
+
 ## [0.1.3] - 2026-08-02
 
 ### Fixed
