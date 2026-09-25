@@ -39,7 +39,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-    "transformer-lens>=2.0",
+    "transformer-lens>=2.0,<4",
     "torch>=2.0",
     "click>=8.1",
     "pydantic>=2.0",
